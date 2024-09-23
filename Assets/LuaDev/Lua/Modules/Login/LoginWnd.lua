@@ -17,21 +17,21 @@ function LoginWnd:Awake()
     txtUsername.text = PlayerPrefs.GetString("PLAYERINFO.USERNAME")
     txtPassword.text = PlayerPrefs.GetString("PLAYERINFO.PASSWORD")
 
-    local btnLogin = self.transform:Find("UIWindow/panContent/btnLogin"):GetComponent("Button");
-    btnLogin.onClick:AddListener(
-        function()
-            playerInfo.username = txtUsername.text
-            playerInfo.password = txtPassword.text
+    self.onLoginBtnClick = function()
+        playerInfo.username = txtUsername.text
+        playerInfo.password = txtPassword.text
 
-            --保存用户名和密码
-            PlayerPrefs.SetString("PLAYERINFO.USERNAME", playerInfo.username)
-            PlayerPrefs.SetString("PLAYERINFO.PASSWORD", playerInfo.password)
-            Log(string.format("username: %s, password: %s", playerInfo.username, playerInfo.password))
-            --CommandManager.Execute(CommandID.DoLogin)
-            --TODO 临时直接进入主界面
-            CommandManager.Execute(CommandID.OpenUI, "LobbyMainMgr")
-        end
-    )
+        --保存用户名和密码
+        PlayerPrefs.SetString("PLAYERINFO.USERNAME", playerInfo.username)
+        PlayerPrefs.SetString("PLAYERINFO.PASSWORD", playerInfo.password)
+        Log(string.format("username: %s, password: %s", playerInfo.username, playerInfo.password))
+        --CommandManager.Execute(CommandID.DoLogin)
+        --TODO 临时直接进入主界面
+        CommandManager.Execute(CommandID.OpenUI, "LobbyMainMgr")
+    end
+
+    self.btnLogin = self.transform:Find("UIWindow/panContent/btnLogin"):GetComponent("Button");
+    self.btnLogin.onClick:AddListener(self.onLoginBtnClick)
 end
 
 --由模块触发调用
@@ -39,6 +39,11 @@ function LoginWnd:RefrshUI()
     --在UI里方法模块管理器的方法
     local serverData = self.module:getServerData()
     Log(serverData)
+end
+
+function LoginWnd:OnDestroy()
+    LogError("LoginWnd:OnDestroy")
+    self.btnLogin.onClick:RemoveListener(self.onLoginBtnClick)
 end
 
 return LoginWnd

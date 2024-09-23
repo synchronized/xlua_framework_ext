@@ -222,6 +222,7 @@ namespace XLuaFrameworkExt
             {
                 try
                 {
+                    luaEnv.DoString("OnApplicationQuit()");
                     luaEnv.Dispose();
                     luaEnv = null;
                 }
