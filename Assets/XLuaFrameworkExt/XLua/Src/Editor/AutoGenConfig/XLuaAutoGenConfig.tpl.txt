@@ -1,0 +1,13 @@
+#define XLUA_HAS_GEN_CONFIG
+
+using UnityEngine;
+
+namespace XLua.CSObjectWrap.Config
+{
+    public class XLuaAutoGenConfig
+	{
+        public static readonly string RootPath = $"{Application.dataPath}/<%=RootPath%>";
+        public static readonly string GenCSPath = $"{Application.dataPath}/<%=GenCSPath%>";
+        public static readonly string GenLuaPath = $"{Application.dataPath}/<%=GenLuaPath%>";
+	}
+}
