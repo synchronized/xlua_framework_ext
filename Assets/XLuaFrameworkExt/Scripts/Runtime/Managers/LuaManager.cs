@@ -56,6 +56,9 @@ namespace XLuaFrameworkExt
         void InitLuaEnv()
         {
             luaEnv = new LuaEnv();
+#if UNITY_EDITOR
+            luaEnv.translator.debugDelegateBridgeRelease = true;
+#endif //UNITY_EDITOR
             HasGameStart = false;
             if (luaEnv != null)
             {
@@ -235,7 +238,8 @@ namespace XLuaFrameworkExt
         /// </summary>
         public void CallFunction(string funcName)
         {
-            GetFunction(funcName).Call();
+            using var luaFunction = GetFunction(funcName);
+            luaFunction.Call();
         }
 
         /// <summary>
@@ -243,7 +247,8 @@ namespace XLuaFrameworkExt
         /// </summary>
         public void CallFunction(string funcName, object param)
         {
-            GetFunction(funcName).Call(param);
+            using var luaFunction = GetFunction(funcName);
+            luaFunction.Call(param);
         }
 
         /// <summary>
@@ -251,7 +256,8 @@ namespace XLuaFrameworkExt
         /// </summary>
         public void CallFunction(string funcName, object param1, object param2)
         {
-            GetFunction(funcName).Call(param1, param2);
+            using var luaFunction = GetFunction(funcName);
+            luaFunction.Call(param1, param2);
         }
 
         /// <summary>
@@ -259,7 +265,8 @@ namespace XLuaFrameworkExt
         /// </summary>
         public void CallFunction(string funcName, object param1, object param2, object param3)
         {
-            GetFunction(funcName).Call(param1, param2, param3);
+            using var luaFunction = GetFunction(funcName);
+            luaFunction.Call(param1, param2, param3);
         }
 
         /// <summary>
@@ -267,7 +274,8 @@ namespace XLuaFrameworkExt
         /// </summary>
         public void CallFunction(string funcName, object param1, object param2, object param3, object param4)
         {
-            GetFunction(funcName).Call(param1, param2, param3, param4);
+            using var luaFunction = GetFunction(funcName);
+            luaFunction.Call(param1, param2, param3, param4);
         }
 
         /// <summary>
@@ -275,7 +283,8 @@ namespace XLuaFrameworkExt
         /// </summary>
         public void CallFunction(string funcName, object param1, object param2, object param3, object param4, object param5)
         {
-            GetFunction(funcName).Call(param1, param2, param3, param4, param5);
+            using var luaFunction = GetFunction(funcName);
+            luaFunction.Call(param1, param2, param3, param4, param5);
         }
 
         /// <summary>
