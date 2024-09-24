@@ -14,9 +14,10 @@ local tinsert = table.insert
 local tremove = table.remove
 local traceback = debug.traceback
 
-local EventManager = Class("EventManager");
+local class = require "30log"
+local EventManager = class("EventManager");
 
-function EventManager:Ctor(safe)
+function EventManager:init(safe)
     self.idCounter = 0
     self.keepSafe = safe
     self.lock = false
@@ -31,6 +32,7 @@ function EventManager:AddListener(e_type, e_listener, ...)
     assert(e_listener ~= nil)
 	local events = self.events[e_type] or {}
 
+    self.idCounter = self.idCounter+1
     local eventNode = {
         id = self.idCounter,
         type = e_type,
@@ -38,7 +40,6 @@ function EventManager:AddListener(e_type, e_listener, ...)
         args = SafePack(...),
         removed = false,
     }
-    self.idCounter = self.idCounter+1
 
 	if self.lock then
 		table.insert(self.opList, function() tinsert(events, eventNode) end)

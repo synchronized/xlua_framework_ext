@@ -1,7 +1,7 @@
 local tinsert = table.insert
 local tremove = table.remove
-
-local UIManager = Class("UIManager")
+local class = require "30log"
+local UIManager = class("UIManager")
 
 local uiStack = {} --ui栈
 local spawnedUIMap = {} --已经创建的UI的Map
@@ -30,7 +30,7 @@ end
 function UIManager.CreateUI(luaClassId, ui, parentUI)
     local prefabPath = ui:PrefabPath()
     if not prefabPath or prefabPath == "" then
-        error(string.format("请重写PrefabPath()方法并指定Prefab路径 uiClass: %s", uiClazz.__cname))
+        error(string.format("请重写PrefabPath()方法并指定Prefab路径 luaClassId: %s", luaClassId))
     end
     local prefab = ResManager.LoadAssetSync(typeof(UnityEngine.GameObject), prefabPath)
     UIManager.SpawnUI(luaClassId, ui, prefab, parentUI)
@@ -41,7 +41,7 @@ end
 function UIManager.CreateUICo(luaClassId, ui, parentUI)
     local prefabPath = ui:PrefabPath()
     if not prefabPath or prefabPath == "" then
-        error(string.format("请重写PrefabPath()方法并指定Prefab路径 uiClass: %s", uiClazz.__cname))
+        error(string.format("请重写PrefabPath()方法并指定Prefab路径 luaClassId: %s", luaClassId))
     end
     local loader = ResManager.LoadAsset(typeof(UnityEngine.GameObject), prefabPath)
     coroutine.waitdone(loader)
@@ -64,8 +64,7 @@ end
 function UIManager.SpawnUI(luaClassId, ui, prefab, parentUI)
     UIManager.SetUI(luaClassId, ui)
     local prefabPath = ui:PrefabPath()
-    local go = UnityEngine.GameObject.Instantiate(prefab)
-    go.transform:SetParent(ui:GetParent(), false)
+    local go = UnityEngine.GameObject.Instantiate(prefab, ui:GetParent(), false)
     local luaBehaviour = go:AddComponent(typeof(XLuaFrameworkExt.LuaBehaviour))
     luaBehaviour.prefabPath = prefabPath
     ui:OnGameObjectSpawn(go)
@@ -130,7 +129,6 @@ function UIManager.RefreshStack()
         if i > 0 and ui.csharpBehaviour.IsSetedOrder and not uiCamera then
             ui.csharpBehaviour:AddCanvas();
         end
-        ui.csharpBehaviour:SetOrders(i);
     end
 end
 
@@ -172,4 +170,4 @@ function UIManager.Shutdown()
     end
 end
 
-return UIManager
+return UIManager:new()

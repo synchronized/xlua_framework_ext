@@ -33,7 +33,7 @@ namespace XLuaFrameworkExt
         /// </summary>
         public void AddLuaClass(LuaTable lua, LuaFunction onEnable, LuaFunction start, LuaFunction onDisable, LuaFunction onAppFocus, LuaFunction onDestroy)
         {
-            string className = lua.Get<string>("__cname");
+            string className = lua.Get<string>("name");
             if (!luas.ContainsKey(className))
             {
                 luas.Add(className, new Functions(lua, onEnable, start, onDisable, onAppFocus, onDestroy));
@@ -45,7 +45,7 @@ namespace XLuaFrameworkExt
         /// </summary>
         public void RemoveLuaClass(LuaTable lua)
         {
-            string className = lua.Get<string>("__cname");
+            string className = lua.Get<string>("name");
             if (luas.ContainsKey(className))
             {
                 luas.Remove(className);

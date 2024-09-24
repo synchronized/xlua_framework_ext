@@ -1,5 +1,7 @@
 local uidPool = 0
 
+local LuaBehaviour = require "Framework.Core.LuaBehaviour"
+
 --例：AddLuaComponent(self.gameObject, require "Modules.Common.WealthListener")
 --luaCalss：传require对象而不是直接传字符串路径，是为了方便写完可以用Ctrl+光标检测路径的可用性
 function AddLuaComponent(transform, luaCalss)
@@ -11,14 +13,7 @@ function AddLuaComponent(transform, luaCalss)
         LogError("luaCalss 为 nil")
         return
     end
-    local haveLuaBahavious = luaCalss.super.__cname == "LuaBehaviour"
-    if not haveLuaBahavious then
-        local parent = luaCalss.super
-        while parent.super and parent.super.__cname == "LuaBehaviour" do
-            haveLuaBahavious = true
-            break
-        end
-    end
+    local haveLuaBahavious = LuaBehaviour:classOf(luaCalss)
     if not haveLuaBahavious then
         LogError("必须继承 LuaBehaviour 或 UIView 才能使用 AddLuaComponent() 方法")
         return
@@ -27,11 +22,9 @@ function AddLuaComponent(transform, luaCalss)
     if IsNil(csharpBehaviour) then
         csharpBehaviour = transform.gameObject:AddComponent(typeof(XLuaFrameworkExt.LuaBehaviour))
     end
-    local com = luaCalss:New()
-    csharpBehaviour:AddLuaClass(com, com._OnEnable, com._Start, com._OnDisable,com._OnApplicationFocus, com._OnDestroy)
-    com.gameObject = transform.gameObject
-    com.transform = transform
-    com:_Awake()
+    local com = luaCalss:new()
+    csharpBehaviour:AddLuaClass(com, com._OnEnable, com._Start, com._OnDisable, com._OnApplicationFocus, com._OnDestroy)
+    com:OnGameObjectSpawn(transform.gameObject)
     return com
 end
 
