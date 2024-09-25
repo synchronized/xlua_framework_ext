@@ -20,7 +20,7 @@ function DailyRewardWnd:Awake()
         local menuItem = {}
         self.menus[i] = menuItem
         menuItem.trans = self.transform:Find("UIWindow/Menus/Menu" .. i)
-        menuItem.btn = menuItem.trans:GetComponent("Toggle")
+        menuItem.btn = menuItem.trans:GetComponent(typeof(UnityEngine.UI.Toggle))
         menuItem.btn:OnValueChanged(function()
             if menuItem.btn.isOn then
                 self:onMenuSelect(i)
@@ -32,7 +32,7 @@ function DailyRewardWnd:Awake()
     self.contentRoot = self.transform:Find("UIWindow/ContentRoot")
     self.contents = {}
 
-    local btnClose = self.transform:Find("UIWindow/btnClose"):GetComponent("Button")
+    local btnClose = self.transform:Find("UIWindow/btnClose"):GetComponent(typeof(UnityEngine.UI.Button))
     btnClose.onClick:AddListener( function()
         self:CloseUI()
     end)

@@ -10,8 +10,8 @@ end
 function LoginWnd:Awake()
     self.super.Awake(self)
 
-    local txtUsername = self.transform:Find("UIWindow/panContent/panInput/txtAccount"):GetComponent("TMP_InputField")
-    local txtPassword = self.transform:Find("UIWindow/panContent/panInput/txtPassword"):GetComponent("TMP_InputField")
+    local txtUsername = self.transform:Find("UIWindow/panContent/panInput/txtAccount"):GetComponent(typeof(TMPro.TMP_InputField))
+    local txtPassword = self.transform:Find("UIWindow/panContent/panInput/txtPassword"):GetComponent(typeof(TMPro.TMP_InputField))
 
     --设置保存的用户名和密码
     txtUsername.text = PlayerPrefs.GetString("PLAYERINFO.USERNAME")
@@ -30,15 +30,8 @@ function LoginWnd:Awake()
         CommandManager.Execute(CommandID.OpenUI, "LobbyMainMgr")
     end
 
-    self.btnLogin = self.transform:Find("UIWindow/panContent/btnLogin"):GetComponent("Button");
+    self.btnLogin = self.transform:Find("UIWindow/panContent/btnLogin"):GetComponent(typeof(UnityEngine.UI.Button));
     self.btnLogin.onClick:AddListener(self.onLoginBtnClick)
-end
-
---由模块触发调用
-function LoginWnd:RefrshUI()
-    --在UI里方法模块管理器的方法
-    local serverData = self.module:getServerData()
-    Log(serverData)
 end
 
 function LoginWnd:OnDestroy()
