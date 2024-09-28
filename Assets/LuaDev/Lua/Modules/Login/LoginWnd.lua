@@ -35,7 +35,6 @@ function LoginWnd:Awake()
 end
 
 function LoginWnd:OnDestroy()
-    LogError("LoginWnd:OnDestroy")
     self.btnLogin.onClick:RemoveListener(self.onLoginBtnClick)
 end
 
