@@ -30,6 +30,7 @@ namespace XLuaFrameworkExt
             get {
                 return new List<string>() {
                     $"{LuaConfig.frameworkRoot}/Lua",
+                    $"{LuaConfig.frameworkRoot}/XUUI/LuaScripts",
                     $"{Application.dataPath}/{LuaConfig.LuaDevPath}/Lua",
                 };
             }

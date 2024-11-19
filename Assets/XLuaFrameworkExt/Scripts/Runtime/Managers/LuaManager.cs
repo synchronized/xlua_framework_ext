@@ -306,5 +306,11 @@ namespace XLuaFrameworkExt
             return luaEnv.Global.Get<LuaTable>(className).Get<LuaFunction>(newFuncName);
         }
 
+        public XUUI.Context AttachViewModel(LuaTable options, GameObject go) {
+            var context = new XUUI.Context(options, luaEnv);
+            context.Attach(go);
+            return context;
+        }
+
     }
 }

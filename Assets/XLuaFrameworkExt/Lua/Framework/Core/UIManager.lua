@@ -68,6 +68,10 @@ function UIManager.SpawnUI(luaClassId, ui, prefab, parentUI)
     local luaBehaviour = go:AddComponent(typeof(XLuaFrameworkExt.LuaBehaviour))
     luaBehaviour.prefabPath = prefabPath
     ui:OnGameObjectSpawn(go)
+    local viewModel = ui:GetViewModel()
+    if viewModel then
+        LuaManager.Instance:AttachViewModel(viewModel, go)
+    end
     if parentUI and parentUI.AddChild then
         parentUI:AddChild(ui)
     end

@@ -24,6 +24,11 @@ end
 function UIView:AddChild(subUI)
 end
 
+--由子类重写，返回mvvm对象
+function UIView:GetViewModel()
+    return nil
+end
+
 --浮动窗口底部弹起
 function UIView:DialogMoveIn(dialog, black, duration)
     duration = duration or 0.3
