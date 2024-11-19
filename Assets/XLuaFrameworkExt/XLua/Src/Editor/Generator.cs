@@ -268,7 +268,13 @@ namespace CSObjectWrapEditor
             List<LazyMemberInfo> lazyMemberInfos = new List<LazyMemberInfo>();
 
             //warnning: filter all method start with "op_"  "add_" "remove_" may  filter some ordinary method
-            parameters.Set("methods", type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.IgnoreCase | BindingFlags.DeclaredOnly)
+            var isStaticClass = type.IsAbstract && type.IsSealed;
+            var bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.IgnoreCase;
+            if (isStaticClass) {
+                bindingFlags |= BindingFlags.DeclaredOnly;
+            }
+
+            parameters.Set("methods", type.GetMethods(bindingFlags)
                 .Where(method => !isDefined(method, typeof (ExtensionAttribute)) || method.GetParameters()[0].ParameterType.IsInterface || method.DeclaringType != type)
                 .Where(method => !method.IsSpecialName 
                     || (
