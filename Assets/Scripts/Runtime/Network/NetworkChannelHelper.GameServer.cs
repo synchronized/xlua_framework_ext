@@ -6,6 +6,7 @@ using System.Text;
 using GameFramework.Network;
 using XLuaFrameworkExt;
 using XLua;
+using System.Diagnostics;
 
 namespace GameClient.Network
 {
@@ -82,10 +83,10 @@ namespace GameClient.Network
 
         public GameServerNetworkChannelHelper() {
             m_MsgHandler = OnReceiveMsg;
-            luaOnReceiveServerData = LuaManager.Instance.GetFunction("LNetMgr.OnReceveServerData");
-            luaOnNetworkConnected = LuaManager.Instance.GetFunction("LNetMgr.OnNetworkConnected");
-            luaOnNetworkClose = LuaManager.Instance.GetFunction("LNetMgr.OnNetworkClose");
-            luaOnNetworkError = LuaManager.Instance.GetFunction("LNetMgr.OnNetworkError");
+            luaOnReceiveServerData = LuaManager.Instance.GetFunction("LNetManager.OnReceveServerData");
+            luaOnNetworkConnected = LuaManager.Instance.GetFunction("LNetManager.OnNetworkConnected");
+            luaOnNetworkClose = LuaManager.Instance.GetFunction("LNetManager.OnNetworkClose");
+            luaOnNetworkError = LuaManager.Instance.GetFunction("LNetManager.OnNetworkError");
         }
 
         /// <summary>

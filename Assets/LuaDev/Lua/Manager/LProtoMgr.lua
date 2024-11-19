@@ -1,10 +1,14 @@
 local pb = require "pb"
 
-LProtoMgr = LProtoMgr or {}
+local class = require "30log"
 
-function LProtoMgr.OnInit()
+LProtoManager = LProtoManager or class("LProtoManager")
+
+function LProtoManager:OnInit()
     local protoBytes = ResManager.LLoadBinaryAssetSyn("Proto/Protobuf/Protocol")
     assert(pb.load(protoBytes))
 end
+
+LProtoMgr = LProtoManager:new()
 
 return LProtoMgr

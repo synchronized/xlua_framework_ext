@@ -19,7 +19,7 @@ public class PatchOperation : GameAsyncOperation
     private readonly StateMachine _machine;
     private ESteps _steps = ESteps.None;
 
-    public PatchOperation(string packageName, string buildPipeline, EPlayMode playMode)
+    public PatchOperation(string packageName, string buildPipeline, EPlayMode playMode, bool isInitiaRequired = true)
     {
         // 注册监听事件
         _eventGroup.AddListener<UserEventDefine.UserTryInitialize>(OnHandleEventMessage);
@@ -42,11 +42,16 @@ public class PatchOperation : GameAsyncOperation
         _machine.SetBlackboardValue("PackageName", packageName);
         _machine.SetBlackboardValue("PlayMode", playMode);
         _machine.SetBlackboardValue("BuildPipeline", buildPipeline);
+        _machine.SetBlackboardValue("IsInitiaRequired", isInitiaRequired);
     }
     protected override void OnStart()
     {
         _steps = ESteps.Update;
-        _machine.Run<FsmInitializePackage>();
+        if ((bool)_machine.GetBlackboardValue("IsInitiaRequired")) {
+            _machine.Run<FsmInitializePackage>();
+        } else {
+            _machine.Run<FsmUpdatePackageVersion>();
+        }
     }
     protected override void OnUpdate()
     {

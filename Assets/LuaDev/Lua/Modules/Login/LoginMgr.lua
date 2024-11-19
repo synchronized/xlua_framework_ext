@@ -9,22 +9,38 @@ function LoginMgr:init()
     self:AddUI("Login", require "Modules.Login.LoginWnd")
 
     --TODO:注册服务器广播事件：onReceveServerData()
-    CommandManager.Add(CommandID.TryLogin, LoginPart.NeedTryLogin)
     CommandManager.Add(CommandID.DoLogin, LoginPart.DoLogin)
 end
 
---由服务器广播触发
-function LoginMgr:OnReceveServerData(msg)
-    self.msg = msg
-    --在模块管理器里获取UI的方法
-    local loginUI = self:GetUI(1)
-    if loginUI and loginUI.gameObject.activeInHierarchy then
-        loginUI:RefrshUI()
-    end
-end
+function LoginMgr:EnterLogin()
+    coroutine.start(function ()
 
-function LoginMgr:getServerData()
-    return self.msg
+        --加载进度条界面
+        local progress = Modules.Common:OpenUI("Progress")
+        progress:SetSmoothSpeed(1)
+        progress:SetTips("加载资源中...")
+        progress:OnComplete(function ()
+            LuaManager.StartComplete()
+                --coroutine.wait(1) --测试用
+
+            Modules.Login:OpenUI("Login")
+            progress:CloseUI()
+        end)
+
+        local preloadPaths = {
+            "Prefabs/Login/LoginWnd",
+        }
+
+        local loader = ResManager.LoadAssetList(preloadPaths)
+        local progressPairs = coroutine.waitprogressfor(loader)
+        for _, progressValue in progressPairs() do
+            progress:SetProgress(progressValue)
+        end
+        loader:Dispose()
+        loader = nil
+
+        progress:SetProgress(1)
+    end)
 end
 
 return LoginMgr

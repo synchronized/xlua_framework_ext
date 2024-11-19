@@ -1,138 +1,78 @@
--- region *.lua
--- Date
--- 此文件由[BabeLua]插件自动生成
 
+local class = require "30log"
 local Timer = require "System.Timer"
 
----@class LLoadingCtrl @ ---------------------------------------------------------------
-LLoadingCtrl = LLoadingCtrl or {
-    NeedShowCongLian = false,
-}
+-- Load管理器
+---@class LLoadingManager @ ---------------------------------------------------------------
+LLoadingManager = LLoadingManager or class("LLoadingManager")
 
-local function fnOpenLoadingUI()
-    LLoadingCtrl.NeedShowCongLian = true
+function LLoadingManager:init()
+    self.isLoading = false
+    self.num = 0
+    self.timerSet = {}
+    self.timerCounter = 0
+end
+
+-- 是否锁定
+function LLoadingManager:IsLoading()
+    return self.isLoading
+end
+
+function LLoadingManager:OpenLoadingUI()
+    self.isLoading = true
     CommandManager.Execute(CommandID.OpenUI, "CommonMgr", "Loading")
 end
 
-local function fnCheckCloseLoading()
-    if LLoadingMgr.Num > 0 then
+function LLoadingManager:CloseLoadingUI()
+    if self.num > 0 then
         return
     end
 
-    LLoadingCtrl.NeedShowCongLian = false
+    self.isLoading = false
     CommandManager.Execute(CommandID.CloseUI, "CommonMgr", "Loading")
 end
 
--- =======================================================================
+-- 锁定屏幕，超时后回调并解锁，返回定时器
+---@param waitTime number
+---@param callBack function
+---@return integer
+function LLoadingManager:Lock(waitTime, callBack)
+    self:OpenLoadingUI()
 
-local function LLoadingMgrCreate()
-    ---@class LLoadingMgr @ ---------------------------------------------------------------
-    local selfClass = LLoadingMgr or {
-        Num = 0,
-    }
-    selfClass.timerSet = selfClass.timerSet or { }
+    self.num = self.num + 1
 
-    -- 锁定屏幕，超时后回调并解锁，返回定时器
-    ---@param waitTime number
-    ---@param callBack function
-    function selfClass.Lock(waitTime, callBack)
-        fnOpenLoadingUI()
-
-        selfClass.Num = selfClass.Num + 1
-        local timer
+    self.timerCounter = self.timerCounter + 1
+    local timerId = self.timerCounter
+    local timer = 1
+    if callBack ~= nil then
         timer = Timer.New(function()
-            selfClass.UnLock(timer)
+            self:Unlock(timerId)
 
             if callBack ~= nil then
                 callBack()
             end
         end, waitTime)
         timer:Start()
-        selfClass.timerSet[timer] = 1
-        return timer
     end
-
-    -- 主动解锁 传入定时器
-    ---@param timer table
-    function selfClass.UnLock(timer)
-        if timer == nil or selfClass.timerSet[timer] == nil then
-            return
-        end
-
-        timer.Stop()
-        selfClass.Num = selfClass.Num - 1
-        fnCheckCloseLoading()
-    end
-    return selfClass
+    self.timerSet[timerId] = timer
+    return timerId
 end
 
--- 超时等待
----@class LLoadingMgr @ ---------------------------------------------------------------
-LLoadingMgr = LLoadingMgrCreate()
-
--- =======================================================================
-
-local function LReconnectingMgrCreate()
-    -- 网络重连用
-    ---@class LReconnectingMgr @ ---------------------------------------------------------------
-    local selfClass = LReconnectingMgr or {
-        -- 延迟转圈等待定时器
-        timerLoading = nil,
-        -- 重连定时器
-        timerReconnecting = nil,
-        -- 锁定中
-        LockIng = false,
-    }
-
-    ---@param showLoadingTime number
-    ---@param reconnectTime number
-    function selfClass.Lock(showLoadingTime, reconnectTime)
-        selfClass.LockIng = true
-        selfClass.RemoveTime()
-
-        -- 延迟转圈等待
-        local fnShowLoading = function()
-            LLoadingMgr.UnLock(selfClass.timerLoading)
-            fnOpenLoadingUI()
-        end
-        if showLoadingTime > 0 then
-            selfClass.timerLoading = LLoadingMgr.Lock(showLoadingTime, fnShowLoading)
-        else
-            fnShowLoading()
-        end
-
-        -- 太久了断开连接，重新调用登陆
-        selfClass.timerReconnecting = LLoadingMgr.Lock(reconnectTime, function()
-            LLoadingMgr.UnLock(selfClass.timerReconnecting)
-            LogWarning("GlobalPart.ChongLianView ReConnect")
-
-            --尝试再次登陆
-            --LoginPart.NeedTryLogin(3)
-            CommandManager.Execute(CommandID.TryLogin)
-        end)
+-- 主动解锁 传入定时器
+---@param timerId integer
+function LLoadingManager:Unlock(timerId)
+    if timerId == nil or self.timerSet[timerId] == nil then
+        return
     end
 
-    function selfClass.UnLock()
-        if not selfClass.LockIng then
-            return
-        end
-
-        selfClass.LockIng = false
-        selfClass.RemoveTime()
-        fnCheckCloseLoading()
+    local timer = self.timerSet[timerId]
+    if type(timer) == "table" then
+        timer:Stop()
     end
-
-    function selfClass.IsLock()
-        return selfClass.LockIng
-    end
-
-    function selfClass.RemoveTime()
-        LLoadingMgr.UnLock(selfClass.timerLoading)
-        LLoadingMgr.UnLock(selfClass.timerReconnecting)
-    end
-    return selfClass
+    self.num = self.num - 1
+    self:CloseLoadingUI()
 end
 
--- 网络重连用
----@class LReconnectingMgr @ ---------------------------------------------------------------
-LReconnectingMgr = LReconnectingMgrCreate()
+LLoadingMgr = LLoadingManager:new()
+
+return LLoadingMgr

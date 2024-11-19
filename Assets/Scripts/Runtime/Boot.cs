@@ -3,6 +3,10 @@ using UniFramework.Event;
 using YooAsset;
 using XLuaFrameworkExt;
 using Cysharp.Threading.Tasks;
+using Unity.VisualScripting;
+//using Mono.Cecil;
+using UnityEngine.SceneManagement;
+using System;
 
 namespace GameLogic.BootLogic
 {
@@ -16,8 +20,13 @@ namespace GameLogic.BootLogic
 
         private EDefaultBuildPipeline BuildPipeline = EDefaultBuildPipeline.ScriptableBuildPipeline;
 
+        [HideInInspector]
+        public static Boot Instance;
+
         void Awake()
         {
+            Instance = this;
+
             GlobalManager.ResLoadMode = PlayMode == EPlayMode.EditorSimulateMode
                     ? ResLoadMode.SimulateMode : ResLoadMode.NormalMode;
             GlobalManager.Behaviour = this;
@@ -47,10 +56,11 @@ namespace GameLogic.BootLogic
 
             LuaManager.Instance.Initalize(this);
 
-            // 加载更新页面
-            var patchPrefabs = Resources.Load<GameObject>("PatchWindow");
-            var pitchWnd = Instantiate(patchPrefabs, GlobalManager.MainCanvas);
-            pitchWnd.AddComponent<PatchWindow>();
+            //初始化lua文件加载器
+            LuaManager.Instance.InitLoader();
+
+            //创建更新界面
+            PatchWindow.CreateWindow();
 
             // 开始补丁更新流程
             PatchOperation operation = new PatchOperation(GlobalManager.DefaultPackage, BuildPipeline.ToString(), PlayMode);
@@ -61,12 +71,9 @@ namespace GameLogic.BootLogic
             var gamePackage = YooAssets.GetPackage(GlobalManager.DefaultPackage);
             YooAssets.SetDefaultPackage(gamePackage);
 
-            //初始化lua文件加载器
-            LuaManager.Instance.InitLoader();
-
             //添加启动完成后的清理逻辑
             LuaManager.Instance.OnStartComplete += () => {
-                Destroy(pitchWnd);
+                PatchWindow.DestroyWindow();
             };
         }
 
@@ -80,7 +87,41 @@ namespace GameLogic.BootLogic
         void OnDestroy()
         {
             NetManager.Shutdown();
-            LuaManager.Instance.Dispose();
+            //NOTE 还未修复LuaEnv销毁提示引用未释放的问题 
+            //LuaManager.Instance.Dispose();
+        }
+
+        //进入更新流程
+        public void EnterPatchFlow()
+        {
+            async UniTask WaitAsync()
+            {
+                //创建更新界面
+                PatchWindow.CreateWindow();
+
+                Resources.Load<GameObject>("Blank");
+
+                // 开始补丁更新流程
+                PatchOperation operation = new PatchOperation(GlobalManager.DefaultPackage, BuildPipeline.ToString(), PlayMode, false);
+                YooAssets.StartOperation(operation);
+                await operation;
+
+                // 设置默认的资源包
+                var gamePackage = YooAssets.GetPackage(GlobalManager.DefaultPackage);
+                YooAssets.SetDefaultPackage(gamePackage);
+
+                //添加启动完成后的清理逻辑
+                LuaManager.Instance.OnStartComplete += () => {
+                    PatchWindow.DestroyWindow();
+                };
+
+                LuaManager.Instance.OnApplicationQuit();
+
+                await UniTask.NextFrame();
+
+                LuaManager.Instance.Restart();
+            }
+            WaitAsync().Forget();
         }
     }
 }

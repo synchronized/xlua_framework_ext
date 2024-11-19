@@ -187,6 +187,11 @@ namespace XLuaFrameworkExt
         {
             SafeDoString("HotfixMain.Stop()");
         }
+
+        public void OnApplicationQuit()
+        {
+            SafeDoString("OnApplicationQuit()");
+        }
         
         public void ReloadScript(string scriptName)
         {
@@ -222,7 +227,6 @@ namespace XLuaFrameworkExt
             {
                 try
                 {
-                    luaEnv.DoString("OnApplicationQuit()");
                     luaEnv.Dispose();
                     luaEnv = null;
                 }
@@ -293,7 +297,13 @@ namespace XLuaFrameworkExt
         /// </summary>
         public LuaFunction GetFunction(string funcName)
         {
-            return luaEnv.Global.Get<LuaFunction>(funcName);
+            int indexOfDot = funcName.IndexOf(".");
+            if (indexOfDot < 0) {
+                return luaEnv.Global.Get<LuaFunction>(funcName);
+            }
+            var className = funcName.Substring(0, indexOfDot);
+            var newFuncName = funcName.Substring(indexOfDot+1);
+            return luaEnv.Global.Get<LuaTable>(className).Get<LuaFunction>(newFuncName);
         }
 
     }

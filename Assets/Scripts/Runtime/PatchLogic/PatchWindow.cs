@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UniFramework.Event;
 using TMPro;
+using XLuaFrameworkExt;
 
 public class PatchWindow : MonoBehaviour
 {
@@ -286,4 +287,26 @@ public class PatchWindow : MonoBehaviour
         // 显示对话框
         msgBox.Show(content, ok);
     }
+
+    #region 静态函数
+
+    private static PatchWindow instance;
+
+    public static void CreateWindow() {
+        if (instance != null) {
+            instance.transform.SetAsLastSibling();
+        } else {
+            // 加载更新页面
+            var patchPrefabs = Resources.Load<GameObject>("PatchWindow");
+            var pitchWnd = Instantiate(patchPrefabs, GlobalManager.MainCanvas);
+            instance = pitchWnd.AddComponent<PatchWindow>();
+        }
+    }
+
+    public static void DestroyWindow() {
+        if (instance != null) {
+            Destroy(instance.gameObject);
+        }
+    }
+    #endregion
 }

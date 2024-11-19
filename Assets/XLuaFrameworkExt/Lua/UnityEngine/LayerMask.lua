@@ -19,7 +19,7 @@ LayerMask.__index = function(t,k)
 end
 
 LayerMask.__call = function(t,v)
-	return setmetatable({value = value or 0}, LayerMask)
+	return setmetatable({value = v or 0}, LayerMask)
 end
 
 function LayerMask.New(value)	

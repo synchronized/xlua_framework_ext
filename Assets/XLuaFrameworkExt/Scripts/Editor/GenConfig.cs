@@ -48,6 +48,9 @@ namespace XLuaFrameworkExt.Config
             "ClusterInput", "Motion",
             "UnityEngine.UI.ReflectionMethodsCache", "NativeLeakDetection",
             "NativeLeakDetectionMode", "WWWAudioExtensions", "UnityEngine.Experimental",
+
+            "UnityEngine.InputSystem.LowLevel",
+            "UnityEngine.InputSystem.InputControlExtensions",
         };
 
         static bool isExcluded(Type type)
@@ -68,7 +71,24 @@ namespace XLuaFrameworkExt.Config
         {
             typeof(DG.Tweening.Core.TweenerCore<Vector3, Vector3, DG.Tweening.Plugins.Options.VectorOptions>),
             typeof(DG.Tweening.Core.TweenerCore<Color, Color, DG.Tweening.Plugins.Options.ColorOptions>),
+            //typeof(System.Action<UnityEngine.InputSystem.InputAction.CallbackContext>),
         };
+
+        static List<string> userExclude = new List<string> {
+            "BundleStream",
+        };
+        static bool isUserExcluded(Type type)
+        {
+            var fullName = type.FullName;
+            foreach (var exclude in userExclude)
+            {
+                if (fullName.Contains(exclude))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         [LuaCallCSharp]
         public static IEnumerable<Type> LuaCallCSharp
@@ -79,6 +99,7 @@ namespace XLuaFrameworkExt.Config
                 {
                     "UnityEngine",
                     "UnityEngine.UI",
+                    "UnityEngine.InputSystem",
                     "DG.Tweening",
                 };
                 var unityTypes = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
@@ -98,10 +119,30 @@ namespace XLuaFrameworkExt.Config
                 var customTypes = (from assembly in customAssemblys.Select(s => Assembly.Load(s))
                                 from type in assembly.GetExportedTypes()
                                 where type.Namespace == null || !type.Namespace.StartsWith("XLua")
-                                        && type.BaseType != typeof(MulticastDelegate) && !type.IsInterface && !type.IsEnum
+                                where !isUserExcluded(type)
+                                where type.BaseType != typeof(MulticastDelegate) 
+                                where !type.IsInterface 
+                                where !type.IsEnum
                                 select type);
                 return unityTypes.Concat(customTypes);
             }
+        }
+
+        static List<string> delegateExcludeList = new List<string>() {
+            "UnityEngine.InputSystem.LowLevel",
+        };
+
+        static bool isDelegateExclude(Type delegateType)
+        {
+            var fullName = delegateType.FullName;
+            foreach (var exclude in  delegateExcludeList)
+            {
+                if (fullName.Contains(exclude))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         //自动把LuaCallCSharp涉及到的delegate加到CSharpCallLua列表，后续可以直接用lua函数做callback
@@ -145,6 +186,7 @@ namespace XLuaFrameworkExt.Config
                     .Where(t => t.BaseType == typeof(MulticastDelegate))
                     .Where(t => !hasGenericParameter(t))
                     .Where(t => !delegateHasEditorRef(t))
+                    .Where(t => !isDelegateExclude(t))
                     .Distinct()
                     .ToList();
             }
@@ -210,6 +252,8 @@ namespace XLuaFrameworkExt.Config
             new List<string>(){"UnityEngine.WebCamTexture", "isReadable"},
             new List<string>(){"UnityEngine.WWW", "movie"},
             new List<string>(){"UnityEngine.WWW", "GetMovieTexture"},
+
+            new List<string>(){"UnityEngine.InputSystem.InputSystem", "onDeviceCommand"},
         };
 
         static bool hasGenericParameter(Type type)
@@ -275,6 +319,7 @@ namespace XLuaFrameworkExt.Config
             if (typeHasEditorRef(method.ReturnType)) return true;
             return method.GetParameters().Any(pinfo => typeHasEditorRef(pinfo.ParameterType));
         }
+
     }
 
 }

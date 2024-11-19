@@ -156,7 +156,7 @@ function coroutine.waitprogress(op, co)
     local _isDone = false
  	return function()
         if _isDone then
-            error("async operation already done!")
+            return nil
         end
         local isDone, progress = yield()
         if isDone then
@@ -168,6 +168,22 @@ function coroutine.waitprogress(op, co)
             end
         end
         return isDone, progress
+    end
+end
+
+function coroutine.waitprogressfor(op, co)
+    local getstate = coroutine.waitprogress(op, co)
+    return function ()
+        return function ()
+            local isDone, progress = getstate()
+            if isDone then
+                return nil
+            end
+            if progress >= 1 then
+                progress = 0.99
+            end
+            return false, progress
+        end
     end
 end
 

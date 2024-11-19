@@ -18,13 +18,15 @@ function LoginWnd:Awake()
     txtPassword.text = PlayerPrefs.GetString("PLAYERINFO.PASSWORD")
 
     self.onLoginBtnClick = function()
-        playerInfo.username = txtUsername.text
-        playerInfo.password = txtPassword.text
+        local username = txtUsername.text
+        local password = txtPassword.text
+        playerInfo.LoginInfo.username = username
+        playerInfo.LoginInfo.password = password
 
         --保存用户名和密码
-        PlayerPrefs.SetString("PLAYERINFO.USERNAME", playerInfo.username)
-        PlayerPrefs.SetString("PLAYERINFO.PASSWORD", playerInfo.password)
-        Log(string.format("username: %s, password: %s", playerInfo.username, playerInfo.password))
+        PlayerPrefs.SetString("PLAYERINFO.USERNAME", username)
+        PlayerPrefs.SetString("PLAYERINFO.PASSWORD", password)
+        Log(string.format("username: %s, password: %s", username, password))
         --CommandManager.Execute(CommandID.DoLogin)
         --TODO 临时直接进入主界面
         CommandManager.Execute(CommandID.OpenUI, "LobbyMainMgr")

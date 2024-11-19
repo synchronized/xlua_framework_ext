@@ -19,6 +19,7 @@ require "Framework.Common.CommandManager"
 require "Framework.UnityHelper"
 require "Framework.BTween"
 
+HotfixMain = require "XLua.HotfixMain"
 local UIManager = require "Framework.Core.UIManager"
 
 function Main()
